@@ -66,9 +66,3 @@ API доступно по адресу из `launchSettings.json` (по умол
  - `Controllers/ConstellationsController` — HTTP-интерфейс (`POST /api/constellations/restore`)
  - `ConstellationRestoreApi.Tests` — 10 unit/интеграционных тестов (xUnit), все проходят
 
-## Сдача
-
-Задание сдаётся через ссылку на публичный GitHub-репозиторий по форме:
-https://forms.gle/Ky4PQ9uFeY6zRQAp6
-
-Дедлайн: 7:59 воскресенья.
