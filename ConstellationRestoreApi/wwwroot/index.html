@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Восстановление кода созвездия</title>
+    <style>
+        body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background: #0b1021; color: #e8eaf6; margin: 0; padding: 40px 20px; }
+        .wrap { max-width: 640px; margin: 0 auto; }
+        h1 { margin: 0 0 8px; font-size: 22px; letter-spacing: 0.4px; }
+        p.sub { color: #94a3b8; margin: 0 0 24px; font-size: 14px; }
+        .card { background: #151b2e; border: 1px solid #1f2a44; border-radius: 12px; padding: 20px; margin-bottom: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.35); }
+        label { display: block; font-size: 13px; color: #94a3b8; margin-bottom: 6px; font-weight: 600; letter-spacing: 0.3px; text-transform: uppercase; }
+        input { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: #e8eaf6; font-size: 15px; box-sizing: border-box; margin-bottom: 12px; }
+        input:focus { outline: none; border-color: #38bdf8; box-shadow: 0 0 0 3px rgba(56,189,248,0.15); }
+        button { width: 100%; padding: 10px; border-radius: 8px; border: none; background: #38bdf8; color: #0b1021; font-weight: 700; font-size: 15px; cursor: pointer; margin-bottom: 14px; }
+        button:hover { background: #7dd3fc; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .result { margin-top: 10px; padding: 12px; border-radius: 8px; display: none; }
+        .result.ok { background: #064e3b; border: 1px solid #065f46; color: #a7f3d0; }
+        .result.bad { background: #7f1d1d; border: 1px solid #991b1b; color: #fecaca; }
+        .badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 6px; margin-right: 8px; }
+        .badge.complete { background: #047857; color: #ecfdf5; }
+        .badge.missing { background: #991b1b; color: #fef2f2; }
+        code { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 14px; }
+        .examples { margin-top: 18px; }
+        .examples h2 { font-size: 14px; color: #94a3b8; margin: 0 0 8px; text-transform: uppercase; letter-spacing: 0.3px; }
+        .ex { background: #151b2e; border: 1px solid #1f2a44; border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; cursor: pointer; }
+        .ex:hover { border-color: #38bdf8; }
+        .ex .ref { font-weight: 700; color: #38bdf8; }
+        .ex .dam { color: #c7d2fe; }
+        .swagger { margin-top: 22px; font-size: 13px; color: #94a3b8; }
+        .swagger a { color: #38bdf8; text-decoration: none; }
+        .swagger a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <h1>Хранилище созвездий</h1>
+        <p class="sub">Введите эталонный и повреждённый коды. API найдёт отсутствующие символы.</p>
+
+        <div class="card">
+            <label for="reference">Эталонный код (reference)</label>
+            <input id="reference" placeholder="например, DRAGON" maxlength="26" />
+
+            <label for="damaged">Повреждённый код (damaged)</label>
+            <input id="damaged" placeholder="например, GOD" />
+
+            <button id="restoreBtn">Восстановить код</button>
+
+            <div id="result" class="result">
+                <div id="resultBadge" class="badge"></div>
+                <div style="margin-top: 6px;"><b>Отсутствующие символы:</b> <span id="missingSymbols" style="font-size:18px; letter-spacing:2px;"></span></div>
+                <div style="margin-top: 4px; font-size: 13px; opacity: 0.9;" id="completeNote"></div>
+            </div>
+            <div id="error" style="color:#fecaca; font-size:13px; margin-top:8px; display:none;"></div>
+        </div>
+
+        <div class="examples">
+            <h2>Примеры</h2>
+            <div class="ex" data-ref="DRAGON" data-dam="GOD"><span class="ref">DRAGON</span> <span style="opacity:0.7;">→</span> <span class="dam">GOD</span></div>
+            <div class="ex" data-ref="VEGA" data-dam="GAVE"><span class="ref">VEGA</span> <span style="opacity:0.7;">→</span> <span class="dam">GAVE</span></div>
+            <div class="ex" data-ref="LYRA" data-dam="LRA"><span class="ref">LYRA</span> <span style="opacity:0.7;">→</span> <span class="dam">LRA</span></div>
+            <div class="ex" data-ref="CYGNUS" data-dam=""><span class="ref">CYGNUS</span> <span style="opacity:0.7;">→</span> <span class="dam">(пусто)</span></div>
+        </div>
+
+        <div class="swagger">
+            Полная документация: <a href="/swagger/index.html" target="_blank">Swagger UI</a>
+        </div>
+    </div>
+
+    <script>
+        const referenceInput = document.getElementById('reference');
+        const damagedInput = document.getElementById('damaged');
+        const btn = document.getElementById('restoreBtn');
+        const result = document.getElementById('result');
+        const resultBadge = document.getElementById('resultBadge');
+        const missingSymbols = document.getElementById('missingSymbols');
+        const completeNote = document.getElementById('completeNote');
+        const error = document.getElementById('error');
+
+        document.querySelectorAll('.ex').forEach(el => {
+            el.addEventListener('click', () => {
+                referenceInput.value = el.dataset.ref;
+                damagedInput.value = el.dataset.dam;
+            });
+        });
+
+        btn.addEventListener('click', async () => {
+            result.style.display = 'none';
+            error.style.display = 'none';
+            btn.disabled = true;
+            btn.textContent = 'Проверяется…';
+
+            try {
+                const response = await fetch('/api/constellations/restore', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        reference: referenceInput.value,
+                        damaged: damagedInput.value
+                    })
+                });
+
+                if (!response.ok) {
+                    error.textContent = 'Ошибка ' + response.status + ': проверьте введённые данные.';
+                    error.style.display = 'block';
+                    return;
+                }
+
+                const data = await response.json();
+
+                missingSymbols.textContent = data.missingSymbols || '(нет)';
+                completeNote.textContent = data.isComplete ? 'Код цел. Дверь сокровищницы открыта.' : 'Есть пропуски. Код неполон.';
+
+                resultBadge.textContent = data.isComplete ? 'ЦЕЛОСТНОСТЬ' : 'ПРОПУСКИ';
+                resultBadge.className = 'badge ' + (data.isComplete ? 'complete' : 'missing');
+
+                result.className = 'result ' + (data.isComplete ? 'ok' : 'bad');
+                result.style.display = 'block';
+            } catch {
+                error.textContent = 'Не удалось соединиться с API.';
+                error.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Восстановить код';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+@ConstellationRestoreApi_HostAddress = http://localhost:5145
+
+GET {{ConstellationRestoreApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

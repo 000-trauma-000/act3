@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="ConstellationRestoreApi.Tests/ConstellationRestoreApi.Tests.csproj" />
+  <Project Path="ConstellationRestoreApi/ConstellationRestoreApi.csproj" />
+</Solution>
